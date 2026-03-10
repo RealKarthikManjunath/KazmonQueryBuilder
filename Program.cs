@@ -78,7 +78,7 @@ Console.ForegroundColor = ConsoleColor.Cyan;
 Console.WriteLine("╔══════════════════════════════════════════════╗");
 Console.WriteLine("║        KazmonQueryBuilder — KQL Assistant     ║");
 Console.WriteLine("║  Type your question in plain English.         ║");
-Console.WriteLine("║  Type 'exit' or 'quit' to quit.               ║");
+Console.WriteLine("║  Commands: /tables  /help  exit               ║");
 Console.WriteLine("╚══════════════════════════════════════════════╝");
 Console.ResetColor();
 Console.WriteLine();
@@ -94,11 +94,52 @@ while (true)
     input = input.Trim();
 
     if (string.IsNullOrEmpty(input)) continue;
+
     if (input.Equals("exit", StringComparison.OrdinalIgnoreCase) ||
         input.Equals("quit", StringComparison.OrdinalIgnoreCase))
     {
         Console.WriteLine("Goodbye!");
         break;
+    }
+
+    if (input.Equals("/help", StringComparison.OrdinalIgnoreCase))
+    {
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine("  /tables  — list all available tables");
+        Console.WriteLine("  /help    — show this help");
+        Console.WriteLine("  exit     — quit the app");
+        Console.WriteLine("  anything else — translate to KQL");
+        Console.ResetColor();
+        Console.WriteLine();
+        continue;
+    }
+
+    if (input.Equals("/tables", StringComparison.OrdinalIgnoreCase) ||
+        input.Contains("available table", StringComparison.OrdinalIgnoreCase) ||
+        input.Contains("list table", StringComparison.OrdinalIgnoreCase) ||
+        input.Contains("show table", StringComparison.OrdinalIgnoreCase))
+    {
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        var sections = new Dictionary<string, string[]>
+        {
+            ["Azure Monitor / Log Analytics"] = ["Heartbeat", "Perf", "Event", "Syslog", "AzureActivity", "AzureMetrics", "AzureDiagnostics", "Usage"],
+            ["Microsoft Entra ID / Sign-in"]  = ["SigninLogs", "AADNonInteractiveUserSignInLogs", "AuditLogs", "AADServicePrincipalSignInLogs", "AADManagedIdentitySignInLogs"],
+            ["Microsoft Sentinel / Security"]  = ["SecurityEvent", "SecurityAlert", "SecurityIncident", "ThreatIntelligenceIndicator", "IdentityInfo", "BehaviorAnalytics"],
+            ["Network"]                        = ["AzureNetworkAnalytics_CL", "DnsEvents", "CommonSecurityLog", "W3CIISLog"],
+            ["Containers & Apps"]              = ["ContainerLog", "ContainerInventory", "KubeEvents", "KubePodInventory", "AppRequests", "AppExceptions", "AppDependencies", "AppTraces"],
+            ["Azure Resources"]                = ["ResourceManagementPublicAccessLogs", "StorageBlobLogs", "KeyVaultLogs"],
+        };
+        foreach (var (category, tables) in sections)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"\n  {category}");
+            Console.ForegroundColor = ConsoleColor.White;
+            foreach (var table in tables)
+                Console.WriteLine($"    - {table}");
+        }
+        Console.ResetColor();
+        Console.WriteLine();
+        continue;
     }
 
     Console.ForegroundColor = ConsoleColor.Yellow;
