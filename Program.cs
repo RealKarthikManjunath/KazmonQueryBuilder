@@ -1,7 +1,10 @@
 using Anthropic;
 using Azure.Identity;
 using Azure.Monitor.Query;
-using KazmonQueryBuilder;
+using KazmonQueryBuilder.Core;
+using KazmonQueryBuilder.Display;
+using KazmonQueryBuilder.Execution;
+using KazmonQueryBuilder.Translation;
 
 // --- Validate environment ---
 var apiKey = Environment.GetEnvironmentVariable("ANTHROPIC_API_KEY");

@@ -1,10 +1,9 @@
 using System.Text.RegularExpressions;
+using KazmonQueryBuilder.Core;
 
-namespace KazmonQueryBuilder;
+namespace KazmonQueryBuilder.Execution;
 
-// Executes KQL against in-memory sample data.
-// Supports: table lookup, basic `project`, basic `where` (string contains), `top`/`limit`.
-class SampleQueryExecutor : IQueryExecutor
+public class SampleQueryExecutor : IQueryExecutor
 {
     public Task<QueryResult> ExecuteAsync(string kql)
     {
@@ -28,15 +27,13 @@ class SampleQueryExecutor : IQueryExecutor
         return Task.FromResult(new QueryResult(columns, result));
     }
 
-    private static string? ExtractTableName(string kql)
+    public static string? ExtractTableName(string kql)
     {
-        // First non-blank, non-comment token before a pipe or end of line
         var match = Regex.Match(kql.TrimStart(), @"^(\w+)");
         return match.Success ? match.Groups[1].Value : null;
     }
 
-    // Apply `top N` or `limit N`
-    private static List<string[]> ApplyTop(string kql, List<string[]> rows)
+    public static List<string[]> ApplyTop(string kql, List<string[]> rows)
     {
         var match = Regex.Match(kql, @"\b(?:top|limit)\s+(\d+)", RegexOptions.IgnoreCase);
         if (match.Success && int.TryParse(match.Groups[1].Value, out int n))
@@ -44,8 +41,7 @@ class SampleQueryExecutor : IQueryExecutor
         return rows;
     }
 
-    // Apply simple `where ColumnName contains "value"` or `where ColumnName == "value"`
-    private static List<string[]> ApplyWhereContains(string kql, string[] columns, List<string[]> rows)
+    public static List<string[]> ApplyWhereContains(string kql, string[] columns, List<string[]> rows)
     {
         var matches = Regex.Matches(kql,
             @"\bwhere\b.+?(\w+)\s*(?:contains|==|=~|has)\s*[""']([^""']+)[""']",
@@ -63,8 +59,7 @@ class SampleQueryExecutor : IQueryExecutor
         return rows;
     }
 
-    // Apply `project Col1, Col2, ...`
-    private static (string[] columns, List<string[]> rows) ApplyProject(string kql, string[] columns, List<string[]> rows)
+    public static (string[] columns, List<string[]> rows) ApplyProject(string kql, string[] columns, List<string[]> rows)
     {
         var match = Regex.Match(kql, @"\bproject\b\s+([^\r\n|]+)", RegexOptions.IgnoreCase);
         if (!match.Success) return (columns, rows);

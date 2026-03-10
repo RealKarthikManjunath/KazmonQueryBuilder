@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="KazmonQueryBuilder.csproj" />
+  <Project Path="KazmonQueryBuilder.Tests/KazmonQueryBuilder.Tests.csproj" />
+</Solution>

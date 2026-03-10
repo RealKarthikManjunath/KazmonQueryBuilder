@@ -1,6 +1,8 @@
-namespace KazmonQueryBuilder;
+using KazmonQueryBuilder.Core;
 
-static class ResultRenderer
+namespace KazmonQueryBuilder.Display;
+
+public static class ResultRenderer
 {
     public static void Render(QueryResult result)
     {
@@ -59,6 +61,6 @@ static class ResultRenderer
         Console.WriteLine(string.Join(" │ ", cells));
     }
 
-    private static string Truncate(string s, int max) =>
+    public static string Truncate(string s, int max) =>
         s.Length <= max ? s : s[..(max - 1)] + "…";
 }

@@ -1,8 +1,9 @@
 using Azure.Monitor.Query;
+using KazmonQueryBuilder.Core;
 
-namespace KazmonQueryBuilder;
+namespace KazmonQueryBuilder.Execution;
 
-class QueryExecutor(LogsQueryClient client, string workspaceId) : IQueryExecutor
+public class QueryExecutor(LogsQueryClient client, string workspaceId) : IQueryExecutor
 {
     public async Task<QueryResult> ExecuteAsync(string kql)
     {

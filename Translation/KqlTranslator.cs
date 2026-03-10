@@ -1,9 +1,10 @@
 using Anthropic;
 using Anthropic.Models.Messages;
+using KazmonQueryBuilder.Display;
 
-namespace KazmonQueryBuilder;
+namespace KazmonQueryBuilder.Translation;
 
-class KqlTranslator(AnthropicClient client)
+public class KqlTranslator(AnthropicClient client)
 {
     private static readonly string SystemPrompt = $"""
         You are an expert in Kusto Query Language (KQL), used in Azure Data Explorer, Azure Monitor, Microsoft Sentinel, and Log Analytics.

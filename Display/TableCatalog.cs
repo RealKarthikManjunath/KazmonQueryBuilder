@@ -1,6 +1,6 @@
-namespace KazmonQueryBuilder;
+namespace KazmonQueryBuilder.Display;
 
-static class TableCatalog
+public static class TableCatalog
 {
     public static readonly Dictionary<string, string[]> Sections = new()
     {
