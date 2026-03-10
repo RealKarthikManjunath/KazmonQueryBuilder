@@ -1,13 +1,24 @@
 using Azure.Monitor.Query;
-using Azure.Monitor.Query.Models;
 
 namespace KazmonQueryBuilder;
 
-class QueryExecutor(LogsQueryClient client, string workspaceId)
+class QueryExecutor(LogsQueryClient client, string workspaceId) : IQueryExecutor
 {
-    public async Task<LogsTable> ExecuteAsync(string kql) =>
-        (await client.QueryWorkspaceAsync(
+    public async Task<QueryResult> ExecuteAsync(string kql)
+    {
+        var response = await client.QueryWorkspaceAsync(
             workspaceId,
             kql,
-            new QueryTimeRange(TimeSpan.FromDays(1)))).Value.Table;
+            new QueryTimeRange(TimeSpan.FromDays(1)));
+
+        var table = response.Value.Table;
+        var columns = table.Columns.Select(c => c.Name).ToArray();
+        var rows = table.Rows
+            .Select(r => Enumerable.Range(0, columns.Length)
+                .Select(i => r[i]?.ToString() ?? "")
+                .ToArray())
+            .ToList();
+
+        return new QueryResult(columns, rows);
+    }
 }

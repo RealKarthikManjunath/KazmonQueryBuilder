@@ -1,12 +1,10 @@
-using Azure.Monitor.Query.Models;
-
 namespace KazmonQueryBuilder;
 
 static class ResultRenderer
 {
-    public static void Render(LogsTable table)
+    public static void Render(QueryResult result)
     {
-        if (table.Rows.Count == 0)
+        if (result.Rows.Count == 0)
         {
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine("  No results returned.");
@@ -15,20 +13,15 @@ static class ResultRenderer
             return;
         }
 
-        var columns = table.Columns;
-        var widths = CalculateWidths(table);
+        var widths = CalculateWidths(result);
 
-        PrintHeader(columns.Select(c => c.Name).ToArray(), widths);
+        PrintHeader(result.Columns, widths);
 
         int rowCount = 0;
-        foreach (var row in table.Rows)
+        foreach (var row in result.Rows)
         {
-            var values = Enumerable.Range(0, columns.Count)
-                .Select(i => Truncate(row[i]?.ToString() ?? "", widths[i]))
-                .ToArray();
-
             Console.ForegroundColor = rowCount % 2 == 0 ? ConsoleColor.White : ConsoleColor.Gray;
-            PrintRow(values, widths);
+            PrintRow(row, widths);
             rowCount++;
         }
 
@@ -39,30 +32,30 @@ static class ResultRenderer
         Console.WriteLine();
     }
 
-    private static int[] CalculateWidths(LogsTable table)
+    private static int[] CalculateWidths(QueryResult result)
     {
-        var widths = table.Columns
-            .Select(c => Math.Min(50, Math.Max(c.Name.Length, 10)))
+        var widths = result.Columns
+            .Select(c => Math.Min(50, Math.Max(c.Length, 10)))
             .ToArray();
 
-        foreach (var row in table.Rows.Take(20))
-            for (int i = 0; i < table.Columns.Count; i++)
-                widths[i] = Math.Min(50, Math.Max(widths[i], (row[i]?.ToString() ?? "").Length));
+        foreach (var row in result.Rows.Take(20))
+            for (int i = 0; i < result.Columns.Length; i++)
+                widths[i] = Math.Min(50, Math.Max(widths[i], (row[i] ?? "").Length));
 
         return widths;
     }
 
-    private static void PrintHeader(string[] columnNames, int[] widths)
+    private static void PrintHeader(string[] columns, int[] widths)
     {
         Console.ForegroundColor = ConsoleColor.Cyan;
-        PrintRow(columnNames, widths);
+        PrintRow(columns, widths);
         Console.WriteLine(string.Join("─┼─", widths.Select(w => new string('─', w))));
         Console.ResetColor();
     }
 
     private static void PrintRow(string[] values, int[] widths)
     {
-        var cells = values.Select((v, i) => Truncate(v, widths[i]).PadRight(widths[i]));
+        var cells = values.Select((v, i) => Truncate(v ?? "", widths[i]).PadRight(widths[i]));
         Console.WriteLine(string.Join(" │ ", cells));
     }
 

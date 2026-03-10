@@ -15,13 +15,13 @@ if (string.IsNullOrEmpty(apiKey))
 }
 
 var workspaceId = Environment.GetEnvironmentVariable("LOG_ANALYTICS_WORKSPACE_ID");
-bool canExecute = !string.IsNullOrEmpty(workspaceId);
+bool usingAzure = !string.IsNullOrEmpty(workspaceId);
 
 // --- Services ---
 var translator = new KqlTranslator(new AnthropicClient { ApiKey = apiKey });
-var executor = canExecute
+IQueryExecutor executor = usingAzure
     ? new QueryExecutor(new LogsQueryClient(new DefaultAzureCredential()), workspaceId!)
-    : null;
+    : new SampleQueryExecutor();
 
 // --- Banner ---
 Console.ForegroundColor = ConsoleColor.Cyan;
@@ -30,11 +30,10 @@ Console.WriteLine("║        KazmonQueryBuilder — KQL Assistant           ║
 Console.WriteLine("║  Type your question in plain English.               ║");
 Console.WriteLine("║  Commands: /tables  /help  exit                     ║");
 Console.WriteLine("╚════════════════════════════════════════════════════╝");
-if (!canExecute)
-{
-    Console.ForegroundColor = ConsoleColor.DarkYellow;
-    Console.WriteLine("  [Execution disabled — set LOG_ANALYTICS_WORKSPACE_ID to enable]");
-}
+Console.ForegroundColor = usingAzure ? ConsoleColor.DarkGreen : ConsoleColor.DarkYellow;
+Console.WriteLine(usingAzure
+    ? "  [Connected to Azure Log Analytics workspace]"
+    : "  [Using built-in sample data — set LOG_ANALYTICS_WORKSPACE_ID for real data]");
 Console.ResetColor();
 Console.WriteLine();
 
@@ -104,17 +103,8 @@ while (true)
     Console.WriteLine();
 
     // Step 2: Execute
-    if (executor is null)
-    {
-        Console.ForegroundColor = ConsoleColor.DarkYellow;
-        Console.WriteLine("  [Execution skipped — set LOG_ANALYTICS_WORKSPACE_ID to run queries]");
-        Console.ResetColor();
-        Console.WriteLine();
-        continue;
-    }
-
     Console.ForegroundColor = ConsoleColor.Yellow;
-    Console.WriteLine("Executing...");
+    Console.WriteLine(usingAzure ? "Executing against workspace..." : "Executing against sample data...");
     Console.ResetColor();
 
     try
